@@ -859,10 +859,18 @@ export interface HeaderFooter {
 	firstFooter: string
 }
 
-export type AutoFilter = string | {
-	from: string | { row: number; column: number };
-	to: string | { row: number; column: number };
+type Address = string | { row: number; column: number }
+
+type Zone = {
+	from: Address;
+	to: Address;
 };
+
+export type AutoFilter = string | ( Zone & {
+  state?: Zone & { 
+    condition: { address: Address; desc?: boolean };
+  };
+});
 
 export interface WorksheetProtection {
 	objects: boolean;
