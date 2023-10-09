@@ -230,7 +230,7 @@ export interface Font {
 }
 
 export type BorderStyle =
-	| 'thin' | 'dotted' | 'hair' | 'medium' | 'double' | 'thick' | 'dashDot'
+	| 'thin' | 'dotted' | 'hair' | 'medium' | 'double' | 'thick' | 'dashed' | 'dashDot'
 	| 'dashDotDot' | 'slantDashDot' | 'mediumDashed' | 'mediumDashDotDot' | 'mediumDashDot';
 
 export interface Color {
@@ -289,6 +289,7 @@ export interface Alignment {
 
 export interface Protection {
 	locked: boolean;
+	hidden: boolean;
 }
 
 export interface Style {
@@ -344,19 +345,20 @@ export interface CellRichTextValue {
 export interface CellHyperlinkValue {
 	text: string;
 	hyperlink: string;
+	tooltip?: string;
 }
 
 export interface CellFormulaValue {
 	formula: string;
-	result?: number | string | Date | { error: CellErrorValue };
-	date1904: boolean;
+	result?: number | string | boolean | Date | CellErrorValue;
+	date1904?: boolean;
 }
 
 export interface CellSharedFormulaValue {
 	sharedFormula: string;
 	readonly formula?: string;
-	result?: number | string | Date | { error: CellErrorValue };
-	date1904: boolean;
+	result?: number | string | boolean | Date | CellErrorValue;
+	date1904?: boolean;
 }
 
 export declare enum ValueType {
@@ -888,6 +890,7 @@ export interface WorksheetProtection {
 	sort: boolean;
 	autoFilter: boolean;
 	pivotTables: boolean;
+	spinCount: number;
 }
 export interface Image {
 	extension: 'jpeg' | 'png' | 'gif';
@@ -997,6 +1000,7 @@ export interface WorksheetModel {
 	views: WorksheetView[];
 	autoFilter: AutoFilter;
 	media: Media[];
+	merges: Range['range'][];
 }
 export type WorksheetState = 'visible' | 'hidden' | 'veryHidden';
 
@@ -1147,7 +1151,7 @@ export interface Worksheet {
 	/**
 	 * Get the last column in a worksheet
 	 */
-	readonly lastColumn: Column;
+	readonly lastColumn: Column | undefined;
 
 	/**
 	 * A count of the number of columns that have values.
@@ -1410,6 +1414,13 @@ export interface WorksheetProperties {
 	outlineLevelRow: number;
 
 	/**
+ 	 * The outline properties which controls how it will summarize rows and columns
+   	 */
+	outlineProperties: {
+		summaryBelow: boolean,
+		summaryRight: boolean,
+	};
+	/**
 	 * Default row height (default: 15)
 	 */
 	defaultRowHeight: number;
@@ -1454,6 +1465,13 @@ export interface JSZipGeneratorOptions {
 	};
 }
 
+export interface XlsxReadOptions {
+	/**
+	 * The list of XML node names to ignore while parsing an XLSX file
+	 */
+	ignoreNodes: string[];
+}
+
 export interface XlsxWriteOptions extends stream.xlsx.WorkbookWriterOptions {
 	/**
 	 * The option passed to JsZip#generateAsync(options)
@@ -1465,19 +1483,19 @@ export interface Xlsx {
 	/**
 	 * read from a file
 	 */
-	readFile(path: string): Promise<Workbook>;
+	readFile(path: string, options?: Partial<XlsxReadOptions>): Promise<Workbook>;
 
 	/**
 	 * read from a stream
 	 * @param stream
 	 */
-	read(stream: import('stream').Stream): Promise<Workbook>;
+	read(stream: import('stream').Stream, options?: Partial<XlsxReadOptions>): Promise<Workbook>;
 
 	/**
 	 * load from an array buffer
 	 * @param buffer
 	 */
-	load(buffer: Buffer): Promise<Workbook>;
+	load(buffer: Buffer, options?: Partial<XlsxReadOptions>): Promise<Workbook>;
 
 	/**
 	 * write to a buffer
@@ -1495,7 +1513,7 @@ export interface Xlsx {
 	write(stream: import('stream').Stream, options?: Partial<XlsxWriteOptions>): Promise<void>;
 }
 
-// https://c2fo.io/fast-csv/docs/parsing/options
+// https://c2fo.github.io/fast-csv/docs/parsing/options
 
 type HeaderArray = (string | undefined | null)[];
 type HeaderTransformFunction = (headers: HeaderArray) => HeaderArray;
@@ -1536,7 +1554,7 @@ interface RowTransformFunction {
 	(row: Rows): Rows;
 }
 
-// https://c2fo.io/fast-csv/docs/formatting/options/
+// https://c2fo.github.io/fast-csv/docs/formatting/options/
 export interface FastCsvFormatterOptionsArgs {
 	objectMode: boolean;
 	delimiter: string;
